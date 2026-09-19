@@ -22,19 +22,20 @@ Dado que el público objetivo principal son **mujeres mayores de 60 años**, se 
 
 ---
 
-## 3. Resumen de Cambios Estructurales (Enhancements v1.0.0)
+## 3. Resumen de Cambios Estructurales
 
-Según las solicitudes de reestructuración, se realizaron las siguientes modificaciones en la página principal:
-
-### Espacios de Actividades (Grilla Central)
-Se respetó el espíritu visual original de cuadros de colores (Azul, Verde, Rojo, Negro) implementando iconos vectoriales, y se actualizaron los contenidos.
-*   **Conservados y actualizados:** Salud y Bienestar, Educación y Cultura (Enredos de Película / ClicSeguroen RED), Derechos, Medio ambiente (Podcast de Marta / Conferencias / Homenaje).
-*   **Eliminados:** Políticas y Feminismos.
+1. **Logo Oficial:** Se reemplazó el texto del AppBar y del Drawer por el logo oficial proporcionado.
+2. **Navegación Unificada (Menú Hamburguesa):** Se eliminó el `TopNav` (difícil de interactuar para adultos mayores) y se reemplazó por un `Drawer` (menú lateral) universal, consistente tanto en PC como en Móvil, con el logo en el encabezado.
+3. **Sección de "Recursos":** Se cambió el diseño de tarjeta truncada por un `Wrap` adaptable. Ahora las tarjetas fluyen naturalmente hacia abajo dependiendo del espacio de la pantalla, evitando la necesidad de hacer *scroll horizontal* oculto.
+4. **Carrusel de Noticias Inteligente:** Se implementó una sección de Novedades con formato de medio de comunicación. 
+   * Tiene **Giro Automático** cada 5 segundos y controles de posición visuales (Puntitos).
+   * Tiene un diseño expandible ("Ver más" / "Ver menos") para no saturar la pantalla.
+   * Cuenta con un **Bloqueo Cognitivo:** Si la persona expande una nota para leerla, el carrusel *frena por completo* para permitir una lectura tranquila, evitando la frustración de que el contenido se escape de la vista.
+5. **Alineación de Contenido:** Se removieron los ejes "Políticas" y "Feminismos", dejando únicamente "Salud y Bienestar", "Educación y Cultura", "Derechos" y "Medio ambiente".
 
 ### Sidebar (Barra Lateral Derecha)
 *   Se redujo considerablemente el tamaño visual del **Código QR**.
 *   El antiguo botón de WhatsApp se reemplazó por un **Botón "DONAR"** gigante y colorido para fomentar el apoyo financiero.
-*   Se renombró "Publicaciones Populares" a **"NOVEDADES"** para mostrar agendas de eventos dinámicos.
 
 ### Revista Colaborativa
 Se sacó la revista colaborativa de la barra lateral (donde perdía relevancia) y se ubicó en un **banner horizontal enorme e ineludible** justo debajo de la Hero Section, con fondo cálido en gradiente.
