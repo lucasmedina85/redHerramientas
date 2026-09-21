@@ -10,7 +10,7 @@ void main() {
 class AppColors {
   static const Color backgroundMain = Color(0xFFFAFAFA);
   static const Color textMain = Color(0xFF1A1A1A);
-  static const Color dominant = Color(0xFF1B4965);
+  static const Color dominant = Color(0xFFC77986); // Rosa pastel oscuro
   static const Color accent = Color(0xFFD95D39); // Terracota cálido
   static const Color backgroundSecondary = Color(0xFFE9ECEF);
   static const Color separatorBar = Color(0xFFFF007F);
@@ -59,8 +59,30 @@ class RedHerramientasApp extends StatelessWidget {
   }
 }
 
-class LandingPage extends StatelessWidget {
+class LandingPage extends StatefulWidget {
   const LandingPage({super.key});
+
+  @override
+  State<LandingPage> createState() => _LandingPageState();
+}
+
+class _LandingPageState extends State<LandingPage> {
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _donateKey = GlobalKey();
+
+  void _scrollToBottom() {
+    _scrollController.animateTo(
+      _scrollController.position.maxScrollExtent,
+      duration: const Duration(milliseconds: 800),
+      curve: Curves.easeInOut,
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,7 +92,39 @@ class LandingPage extends StatelessWidget {
       appBar: _buildAppBar(context),
       // 🍔 Menú Hamburguesa ("3 rayas") presente tanto en Desktop como en Mobile
       drawer: _buildDrawer(context),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'whatsapp',
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            onPressed: () {
+              // launchUrl(Uri.parse('https://wa.me/numerodetelefono'));
+            },
+            child: ClipOval(
+              child: Image.asset(
+                'assets/whatsapp.png',
+                width: 55,
+                height: 55,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'scroll_top',
+            backgroundColor: AppColors.dominant.withOpacity(0.6),
+            elevation: 0,
+            onPressed: () {
+              _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+            },
+            child: const Icon(Icons.arrow_upward, color: Colors.white),
+          ),
+        ],
+      ),
       body: SingleChildScrollView(
+        controller: _scrollController,
         child: Column(
           children: [
             // Barra superior (separador visual)
@@ -89,8 +143,72 @@ class LandingPage extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 40),
+            _buildFooter(isDesktop),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildFooter(bool isDesktop) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFF0A0514),
+      padding: EdgeInsets.symmetric(vertical: 40, horizontal: isDesktop ? 60 : 20),
+      child: Flex(
+        direction: isDesktop ? Axis.horizontal : Axis.vertical,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Image.network(
+                'https://i.imgur.com/CFM0Pcr.png',
+                height: 50,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 20),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Asociación Civil Sin Fines de Lucro - IGJ N° 1981600",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      "Propiciamos, desde el campo nacional y popular, espacios que garanticen inclusión social, cultural y de los derechos de las mujeres adultas mayores.",
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!isDesktop) const SizedBox(height: 30),
+          Row(
+            mainAxisAlignment: isDesktop ? MainAxisAlignment.end : MainAxisAlignment.start,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.facebook, color: Colors.blueAccent),
+                onPressed: () {},
+                iconSize: 32,
+              ),
+              IconButton(
+                icon: const Icon(Icons.play_circle_fill, color: Colors.redAccent),
+                onPressed: () {},
+                iconSize: 32,
+              ),
+              IconButton(
+                icon: const Icon(Icons.camera_alt, color: Colors.pinkAccent),
+                onPressed: () {},
+                iconSize: 32,
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -129,7 +247,10 @@ class LandingPage extends StatelessWidget {
               ),
             ),
           ),
-          _drawerItem("Inicio"),
+          _drawerItem("Inicio", onTap: () {
+            Navigator.pop(context);
+            _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+          }),
           _drawerItem("Quiénes Somos"),
           _drawerItem("Nuestras Secciones"),
           
@@ -154,16 +275,48 @@ class LandingPage extends StatelessWidget {
           ),
           
           _drawerItem("Contactanos"),
+          _drawerItem("Donar", isHighlighted: true, onTap: () {
+            final targetContext = _donateKey.currentContext;
+            Navigator.pop(context); // Cierra el menú lateral
+            
+            if (targetContext != null) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Scrollable.ensureVisible(
+                  targetContext,
+                  alignment: 0.5,
+                  duration: const Duration(milliseconds: 800),
+                  curve: Curves.easeInOut,
+                );
+              });
+            } else {
+              // Fallback en caso de que el key falle: scrollear al máximo posible
+              _scrollController.animateTo(
+                _scrollController.position.maxScrollExtent,
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeInOut,
+              );
+            }
+          }),
         ],
       ),
     );
   }
 
-  Widget _drawerItem(String title) {
-    return ListTile(
-      title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-      onTap: () {},
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+  Widget _drawerItem(String title, {VoidCallback? onTap, bool isHighlighted = false}) {
+    return Container(
+      color: isHighlighted ? AppColors.dominant.withOpacity(0.15) : Colors.transparent,
+      child: ListTile(
+        title: Text(
+          title, 
+          style: TextStyle(
+            fontSize: 20, 
+            fontWeight: FontWeight.bold, 
+            color: isHighlighted ? AppColors.dominant : AppColors.textMain
+          ),
+        ),
+        onTap: onTap ?? () {},
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      ),
     );
   }
 
@@ -183,7 +336,7 @@ class LandingPage extends StatelessWidget {
           flex: 7,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
+            children: [
               HeroSection(),
               SizedBox(height: 50),
               BannerRevista(), 
@@ -197,9 +350,9 @@ class LandingPage extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 40),
-        const Expanded(
+        Expanded(
           flex: 3,
-          child: SidebarSection(), // Right sidebar content
+          child: SidebarSection(donateKey: _donateKey), // Right sidebar content
         ),
       ],
     );
@@ -208,7 +361,7 @@ class LandingPage extends StatelessWidget {
   Widget _buildMobileLayout() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
+      children: [
         HeroSection(),
         SizedBox(height: 40),
         BannerRevista(),
@@ -219,7 +372,7 @@ class LandingPage extends StatelessWidget {
         SizedBox(height: 40),
         RecursosSection(),
         SizedBox(height: 60),
-        SidebarSection(),
+        SidebarSection(donateKey: _donateKey),
       ],
     );
   }
@@ -617,7 +770,7 @@ class ActividadesSection extends StatelessWidget {
       children: [
         LayoutBuilder(
           builder: (context, constraints) {
-            int columns = constraints.maxWidth > 700 ? 4 : (constraints.maxWidth > 400 ? 2 : 1);
+            int columns = constraints.maxWidth > 700 ? 4 : 2;
             return GridView.count(
               crossAxisCount: columns,
               crossAxisSpacing: 20,
@@ -626,10 +779,10 @@ class ActividadesSection extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               childAspectRatio: 0.85, 
               children: [
-                _buildActivityCard("Salud y\nBienestar", null, AppColors.btnBlue, Icons.favorite),
-                _buildActivityCard("Educación y\nCultura", "Enredos de Película\nClicSeguroen RED", AppColors.btnGreen, Icons.school),
-                _buildActivityCard("Derechos", null, AppColors.btnRed, Icons.gavel),
-                _buildActivityCard("Medio ambiente", "Podcast de Marta\nConferencias\nHomenaje", AppColors.btnBlack, Icons.eco),
+                _buildActivityCard("Derechos", null, AppColors.dominant, Icons.gavel),
+                _buildActivityCard("Medio\nAmbiente", null, const Color(0xFF81B29A), Icons.eco),
+                _buildActivityCard("Educación y\nCultura", null, const Color(0xFFDFB850), Icons.school),
+                _buildActivityCard("Salud y\nBienestar", null, const Color(0xFF7AB4CA), Icons.favorite),
               ],
             );
           },
@@ -653,42 +806,44 @@ class ActividadesSection extends StatelessWidget {
           onTap: () {},
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
+            padding: const EdgeInsets.all(16.0),
+            child: Stack(
               children: [
-                Icon(icon, size: 60, color: Colors.white.withOpacity(0.9)),
-                const SizedBox(height: 20),
-                Text(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    height: 1.2,
+                Align(
+                  alignment: Alignment.topLeft,
+                  child: Icon(icon, size: 40, color: Colors.white.withOpacity(0.9)),
+                ),
+                Align(
+                  alignment: Alignment.center,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 20),
+                      Text(
+                        title,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.2,
+                        ),
+                      ),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          subtitle,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      subtitle,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: bgColor,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                ]
               ],
             ),
           ),
@@ -696,6 +851,7 @@ class ActividadesSection extends StatelessWidget {
       ),
     );
   }
+
 }
 
 class PropuestasSection extends StatelessWidget {
@@ -767,36 +923,42 @@ class RecursosSection extends StatelessWidget {
         Text("Recursos destacados", style: Theme.of(context).textTheme.titleLarge),
         const SizedBox(height: 24),
         
-        // Tarjetas ahora completamente ADAPTATIVAS (Wrap)
-        // Esto elimina el scroll horizontal oculto y muestra todo según el ancho de pantalla
-        Wrap(
-          spacing: 20,
-          runSpacing: 20,
-          children: resources.map((res) {
-            return Container(
-              width: 250,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: AppColors.dominant,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 3)),
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.star, size: 40, color: AppColors.mustardDonate),
-                  const SizedBox(height: 16),
-                  Text(
-                    res,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            int columns = constraints.maxWidth > 700 ? 5 : 2;
+            return GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 2 / 3, // adaptados a 2x3
+              children: resources.map((res) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.dominant,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 3)),
+                    ],
                   ),
-                ],
-              ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.star, size: 40, color: AppColors.mustardDonate),
+                      const SizedBox(height: 16),
+                      Text(
+                        res,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
         const SizedBox(height: 40),
         
@@ -835,7 +997,8 @@ class RecursosSection extends StatelessWidget {
 // ==========================================
 
 class SidebarSection extends StatelessWidget {
-  const SidebarSection({super.key});
+  final GlobalKey? donateKey;
+  const SidebarSection({super.key, this.donateKey});
 
   @override
   Widget build(BuildContext context) {
@@ -844,6 +1007,7 @@ class SidebarSection extends StatelessWidget {
       children: [
         // Bloque QR achicado y Botón Donar
         Container(
+          key: donateKey,
           width: double.infinity,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(

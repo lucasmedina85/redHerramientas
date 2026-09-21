@@ -4,11 +4,14 @@ Este proyecto es el MVP (Producto Mínimo Viable) del rediseño de la landing pa
 
 ## 🚀 Características Principales
 
-- **Alto Contraste y Legibilidad:** Paleta de colores cálida (blanco, azul oscuro, terracota) con tipografías de gran tamaño (min 18px-20px).
+- **Alto Contraste y Legibilidad:** Paleta de colores cálida (blanco, rosa pastel oscuro, amarillo pastel, celeste, verde pastel) con tipografías de gran tamaño (min 18px-20px).
 - **Navegación Explícita:** Se evita la carga cognitiva con un Drawer global adaptativo (ícono de 3 rayas) para todas las plataformas y áreas táctiles grandes.
 - **Diseño Adaptativo (Responsivo):** Layout estructurado en Desktop (70% contenido, 30% sidebar) y adaptado a una sola columna en Mobile. Tarjetas adaptativas sin scroll horizontal oculto.
 - **Carrusel de Noticias Interactivo:** Sección de novedades estilo periodístico con giro automático (5s) y pausa inteligente cuando el usuario expande una nota para leer.
 - **Botones Accesibles:** Áreas de interacción masivas (`minimumSize` extendido) que previenen clics accidentales.
+- **Accesos Rápidos:** Botón flotante de WhatsApp local y botón de scroll up para navegación vertical sin fricción.
+- **Identidad Gráfica:** Transición de paletas oscuras a tonos pasteles amigables (Rosa dominante, amarillo, verde agua y celeste).
+- **Redirección de Donaciones:** Integración precisa con ScrollController para focalizar la zona de donativos ("Apoyá nuestro espacio") directamente desde el menú.
 
 ## 🛠️ Tecnologías
 
