@@ -69,6 +69,9 @@ class LandingPage extends StatefulWidget {
 class _LandingPageState extends State<LandingPage> {
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _donateKey = GlobalKey();
+  
+  bool _isSearchExpanded = false;
+  final TextEditingController _searchController = TextEditingController();
 
   void _scrollToBottom() {
     _scrollController.animateTo(
