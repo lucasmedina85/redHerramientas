@@ -4,7 +4,7 @@ const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
 const RESOURCES = {"manifest.json": "1fe0033187b31a7baffe5665bac09fb6",
-"assets/fonts/MaterialIcons-Regular.otf": "9d85bef0822578740bd88055b6251f75",
+"assets/fonts/MaterialIcons-Regular.otf": "691f9c64ae4914d48192339cc8a7fa48",
 "assets/AssetManifest.json": "5e0b94e812e393e4553d3c97d3058335",
 "assets/NOTICES": "3730494981d3b2c2d309c4d6c0e994d7",
 "assets/assets/whatsapp.png": "82e5b748febb65bb88a4b3179626ff5e",
@@ -16,7 +16,7 @@ const RESOURCES = {"manifest.json": "1fe0033187b31a7baffe5665bac09fb6",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
-"flutter_bootstrap.js": "5f4f7e13df725561e9edced36205abe9",
+"flutter_bootstrap.js": "ada24a746c55c4a9991e35428244c604",
 "flutter.js": "383e55f7f3cce5be08fcf1f3881f585c",
 "version.json": "c743484dadc77c32eb71b17260918bdd",
 "favicon.png": "5dcef449791fa27946b3d35ad8803796",
@@ -32,7 +32,7 @@ const RESOURCES = {"manifest.json": "1fe0033187b31a7baffe5665bac09fb6",
 "canvaskit/skwasm.wasm": "4051bfc27ba29bf420d17aa0c3a98bce",
 "canvaskit/canvaskit.js": "738255d00768497e86aa4ca510cce1e1",
 "canvaskit/canvaskit.wasm": "9251bb81ae8464c4df3b072f84aa969b",
-"main.dart.js": "8cf3311bc69b114277560e9a4c5dfdd4"};
+"main.dart.js": "a69317ad943051911a564a6caf09927e"};
 // The application shell files that are downloaded before a service worker can
 // start.
 const CORE = ["main.dart.js",
