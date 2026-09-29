@@ -1,6 +1,5 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'dart:async';
 import 'package:url_launcher/url_launcher.dart';
 
 void main() {
@@ -8,13 +7,13 @@ void main() {
 }
 
 class AppColors {
-  static const Color backgroundMain = Color(0xFFFAFAFA);
-  static const Color textMain = Color(0xFF1A1A1A);
-  static const Color dominant = Color(0xFFC77986); // Rosa pastel oscuro
-  static const Color accent = Color(0xFFD95D39); // Terracota cálido
-  static const Color backgroundSecondary = Color(0xFFE9ECEF);
-  static const Color separatorBar = Color(0xFFFF007F);
-  static const Color mustardDonate = Color(0xFFFFDB58);
+  static const Color dominant = Color(0xFFC77986);
+  static const Color backgroundLight = Color(0xFFFAF9F6);
+  static const Color backgroundSecondary = Color(0xFFEFEFEF);
+  static const Color textMain = Color(0xFF2C2C2C);
+  static const Color accent = Color(0xFFE5A9A9);
+  static const Color separatorBar = Color(0xFFB56A75);
+  static const Color mustardDonate = Color(0xFFE4C563);
 }
 
 class RedHerramientasApp extends StatefulWidget {
@@ -27,69 +26,64 @@ class RedHerramientasApp extends StatefulWidget {
 class _RedHerramientasAppState extends State<RedHerramientasApp> {
   double _textScale = 1.0;
 
-  void _increaseFont() => setState(() => _textScale = (_textScale + 0.1).clamp(0.8, 2.0));
-  void _decreaseFont() => setState(() => _textScale = (_textScale - 0.1).clamp(0.8, 2.0));
+  void _setFontScale(double scale) {
+    setState(() {
+      _textScale = scale;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Red de Herramientas',
+      title: 'Red de Herramientas Entre Mujeres',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: AppColors.backgroundMain,
-        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.dominant, background: AppColors.backgroundMain),
-        textTheme: GoogleFonts.robotoTextTheme().copyWith(
-          bodyLarge: const TextStyle(fontSize: 20, color: AppColors.textMain, height: 1.5),
-          bodyMedium: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.5),
-          titleLarge: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: AppColors.dominant),
-          headlineMedium: const TextStyle(fontSize: 34, fontWeight: FontWeight.w900, color: AppColors.textMain),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.accent,
-            foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-            elevation: 2,
-          ),
-        ),
+        useMaterial3: true,
+        scaffoldBackgroundColor: AppColors.backgroundLight,
+        fontFamily: 'Roboto',
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.dominant),
       ),
       builder: (context, child) {
         return MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(_textScale)),
+          data: MediaQuery.of(context).copyWith(
+            textScaler: TextScaler.linear(_textScale),
+          ),
           child: child!,
         );
       },
       home: LandingPage(
-        onIncreaseFont: _increaseFont,
-        onDecreaseFont: _decreaseFont,
+        onSetFontScale: _setFontScale,
+        currentScale: _textScale,
       ),
     );
   }
 }
 
 class LandingPage extends StatefulWidget {
-  final VoidCallback onIncreaseFont;
-  final VoidCallback onDecreaseFont;
+  final Function(double) onSetFontScale;
+  final double currentScale;
 
-  const LandingPage({super.key, required this.onIncreaseFont, required this.onDecreaseFont});
+  const LandingPage({
+    super.key, 
+    required this.onSetFontScale,
+    required this.currentScale,
+  });
 
   @override
   State<LandingPage> createState() => _LandingPageState();
 }
 
 class _LandingPageState extends State<LandingPage> {
-  final ScrollController _scrollController = ScrollController();
-  
   final GlobalKey _inicioKey = GlobalKey();
   final GlobalKey _quienesSomosKey = GlobalKey();
   final GlobalKey _actividadesKey = GlobalKey();
   final GlobalKey _recursosKey = GlobalKey();
   final GlobalKey _contactoKey = GlobalKey();
+  final GlobalKey _donateKey = GlobalKey();
 
-  bool _isSearchExpanded = false;
+  final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
+  bool _isSearchExpanded = false;
 
   final Map<String, GlobalKey> _searchKeywords = {};
 
@@ -97,124 +91,119 @@ class _LandingPageState extends State<LandingPage> {
   void initState() {
     super.initState();
     _searchKeywords['inicio'] = _inicioKey;
-    _searchKeywords['somos'] = _quienesSomosKey;
     _searchKeywords['quienes'] = _quienesSomosKey;
+    _searchKeywords['somos'] = _quienesSomosKey;
     _searchKeywords['actividades'] = _actividadesKey;
-    _searchKeywords['ejes'] = _actividadesKey;
     _searchKeywords['recursos'] = _recursosKey;
     _searchKeywords['contacto'] = _contactoKey;
-    _searchKeywords['donar'] = _contactoKey;
+    _searchKeywords['donar'] = _donateKey;
+    _searchKeywords['ejes'] = _actividadesKey;
   }
 
   void _scrollToKey(GlobalKey key) {
-    if (key.currentContext != null) {
+    final context = key.currentContext;
+    if (context != null) {
       Scrollable.ensureVisible(
-        key.currentContext!,
+        context,
         duration: const Duration(milliseconds: 800),
         curve: Curves.easeInOut,
+        alignment: 0.1, // Scroll so item is near top
       );
     }
   }
 
-  void _performSearch(String query) {
-    String q = query.toLowerCase().trim();
-    for (var k in _searchKeywords.keys) {
-      if (q.contains(k)) {
-        _scrollToKey(_searchKeywords[k]!);
+  void _handleSearch(String query) {
+    final lowerQuery = query.toLowerCase().trim();
+    for (final entry in _searchKeywords.entries) {
+      if (lowerQuery.contains(entry.key)) {
+        _scrollToKey(entry.value);
         return;
       }
     }
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('No se encontró sección para: $query')),
+      const SnackBar(content: Text('No se encontraron resultados para esa búsqueda.')),
     );
-  }
-
-  void _launchWhatsApp() async {
-    final url = Uri.parse('https://wa.me/5491122766776');
-    if (await canLaunchUrl(url)) {
-      await launchUrl(url);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDesktop = MediaQuery.of(context).size.width >= 900;
+    bool isDesktop = MediaQuery.of(context).size.width > 800;
 
     return Scaffold(
-      appBar: _buildAppBar(context, isDesktop),
-      drawer: !isDesktop ? _buildDrawer(context) : null,
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton(
-            heroTag: 'whatsapp',
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            onPressed: _launchWhatsApp,
-            child: ClipOval(
-              child: Image.asset('assets/whatsapp.png', width: 55, height: 55, fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => const Icon(Icons.chat, color: Colors.green, size: 40),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          FloatingActionButton(
-            heroTag: 'scroll_top',
-            backgroundColor: AppColors.dominant.withOpacity(0.6),
-            elevation: 0,
-            onPressed: () => _scrollToKey(_inicioKey),
-            child: const Icon(Icons.arrow_upward, color: Colors.white),
-          ),
-        ],
+      appBar: _buildAppBar(isDesktop, context),
+      drawer: isDesktop ? null : _buildDrawer(context),
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.chat, color: Colors.white, size: 28),
+        onPressed: () => launchUrl(Uri.parse('https://wa.me/5491122766776')),
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
         child: Column(
           children: [
-            Container(key: _inicioKey, width: double.infinity, color: AppColors.separatorBar, height: 20),
-            
-            // Header
-            if (isDesktop) _buildDesktopNav(),
-
-            // Carrusel Full Width
-            const FullWidthCarousel(),
-
-            // Ejes Full Width
-            Container(key: _actividadesKey, child: const EjesSection()),
-
-            Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 1400),
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
+            // Top Nav on Desktop
+            if (isDesktop)
+              Container(
+                key: _inicioKey,
+                width: double.infinity,
+                color: AppColors.dominant,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _navItem("Inicio", () => _scrollToKey(_inicioKey)),
+                    _navItem("Quiénes somos", () => _scrollToKey(_quienesSomosKey)), // HeroSection stands as Quienes somos via Clic Seguro en RED
+                    _navItem("Actividades", () => _scrollToKey(_actividadesKey)),
+                    _navItem("Recursos", () => _scrollToKey(_recursosKey)),
+                    _navItem("Contacto", () => _scrollToKey(_contactoKey)),
+                  ],
                 ),
               ),
+            
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: isDesktop ? _buildDesktopLayout() : _buildMobileLayout(),
             ),
-            const SizedBox(height: 40),
-            Container(key: _contactoKey, child: _buildFooter()),
+            
+            // Footer
+            Container(key: _contactoKey, child: _buildFooter(isDesktop)),
           ],
         ),
       ),
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, bool isDesktop) {
+  Widget _navItem(String title, VoidCallback onTap) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: TextButton(
+        onPressed: onTap,
+        child: Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(bool isDesktop, BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 1,
       toolbarHeight: 90,
       iconTheme: const IconThemeData(color: AppColors.dominant, size: 36),
-      title: Image.network('https://i.imgur.com/CFM0Pcr.png', height: 60, fit: BoxFit.contain),
+      title: Image.network(
+        'https://i.imgur.com/CFM0Pcr.png',
+        height: 60,
+        fit: BoxFit.contain,
+        semanticLabel: 'Logo Red de Herramientas',
+      ),
       actions: [
-        IconButton(
-          icon: const Text("A-", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.dominant)),
-          onPressed: widget.onDecreaseFont,
-        ),
-        IconButton(
-          icon: const Text("A+", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.dominant)),
-          onPressed: widget.onIncreaseFont,
-        ),
         // Buscador Animado
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 20.0, horizontal: 10.0),
@@ -230,7 +219,10 @@ class _LandingPageState extends State<LandingPage> {
             child: Stack(
               children: [
                 Positioned(
-                  left: 16, top: 0, bottom: 0, right: 50,
+                  left: 16,
+                  top: 0,
+                  bottom: 0,
+                  right: 50,
                   child: AnimatedOpacity(
                     duration: const Duration(milliseconds: 200),
                     opacity: _isSearchExpanded ? 1.0 : 0.0,
@@ -239,23 +231,33 @@ class _LandingPageState extends State<LandingPage> {
                       child: Center(
                         child: TextField(
                           controller: _searchController,
-                          decoration: const InputDecoration(hintText: 'Buscar...', border: InputBorder.none, isDense: true),
-                          onSubmitted: _performSearch,
+                          decoration: const InputDecoration(
+                            hintText: 'Buscar...',
+                            border: InputBorder.none,
+                            isDense: true,
+                          ),
+                          style: const TextStyle(fontSize: 18, color: AppColors.textMain),
+                          onSubmitted: _handleSearch,
                         ),
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  right: 0, top: 0, bottom: 0,
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
                   child: IconButton(
                     iconSize: 28,
                     icon: Icon(_isSearchExpanded ? Icons.close : Icons.search),
                     color: AppColors.dominant,
+                    splashRadius: 24,
                     onPressed: () {
                       setState(() {
                         _isSearchExpanded = !_isSearchExpanded;
-                        if (!_isSearchExpanded) _searchController.clear();
+                        if (!_isSearchExpanded) {
+                          _searchController.clear();
+                        }
                       });
                     },
                   ),
@@ -264,64 +266,81 @@ class _LandingPageState extends State<LandingPage> {
             ),
           ),
         ),
+        // Menú de tamaño de fuente
+        PopupMenuButton<double>(
+          icon: const Icon(Icons.format_size, color: AppColors.dominant),
+          tooltip: 'Tamaño de fuente',
+          onSelected: widget.onSetFontScale,
+          itemBuilder: (context) => [
+            const PopupMenuItem(value: 0.85, child: Text('Pequeña')),
+            const PopupMenuItem(value: 1.0, child: Text('Normal')),
+            const PopupMenuItem(value: 1.15, child: Text('Grande')),
+            const PopupMenuItem(value: 1.3, child: Text('Muy Grande')),
+          ],
+        ),
         if (isDesktop) const SizedBox(width: 20),
       ],
     );
   }
 
-  Widget _buildDesktopNav() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _navLink("Inicio", _inicioKey),
-          _navLink("Quiénes somos", _quienesSomosKey),
-          _navLink("Actividades", _actividadesKey),
-          _navLink("Recursos", _recursosKey),
-          _navLink("Contacto", _contactoKey),
-        ],
-      ),
-    );
-  }
-
-  Widget _navLink(String title, GlobalKey key) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: TextButton(
-        onPressed: () => _scrollToKey(key),
-        child: Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-      ),
-    );
-  }
-
   Widget _buildDrawer(BuildContext context) {
     return Drawer(
+      backgroundColor: Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
           DrawerHeader(
-            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Colors.black12))),
-            child: Center(child: Image.network('https://i.imgur.com/CFM0Pcr.png', fit: BoxFit.contain)),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              border: Border(bottom: BorderSide(color: Colors.black12, width: 1)),
+            ),
+            child: Center(
+              child: Image.network(
+                'https://i.imgur.com/CFM0Pcr.png',
+                fit: BoxFit.contain,
+              ),
+            ),
           ),
-          _drawerItem("Inicio", _inicioKey),
-          _drawerItem("Quiénes somos", _quienesSomosKey),
-          _drawerItem("Actividades", _actividadesKey),
-          _drawerItem("Recursos", _recursosKey),
-          _drawerItem("Contacto", _contactoKey),
+          _drawerItem("Inicio", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_inicioKey);
+          }),
+          _drawerItem("Quiénes Somos", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_quienesSomosKey);
+          }),
+          _drawerItem("Actividades", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_actividadesKey);
+          }),
+          _drawerItem("Recursos", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_recursosKey);
+          }),
+          _drawerItem("Contacto", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_contactoKey);
+          }),
         ],
       ),
     );
   }
 
-  Widget _drawerItem(String title, GlobalKey key) {
-    return ListTile(
-      title: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain)),
-      onTap: () {
-        Navigator.pop(context);
-        _scrollToKey(key);
-      },
+  Widget _drawerItem(String title, {VoidCallback? onTap, bool isHighlighted = false}) {
+    return Container(
+      color: isHighlighted ? AppColors.dominant.withOpacity(0.15) : Colors.transparent,
+      child: ListTile(
+        title: Text(
+          title, 
+          style: TextStyle(
+            fontSize: 20, 
+            fontWeight: FontWeight.bold, 
+            color: isHighlighted ? AppColors.dominant : AppColors.textMain
+          ),
+        ),
+        onTap: onTap,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      ),
     );
   }
 
@@ -329,73 +348,88 @@ class _LandingPageState extends State<LandingPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(flex: 7, child: _buildMainContent()),
-        const SizedBox(width: 60),
-        Expanded(flex: 3, child: _buildSidebar()),
+        Expanded(
+          flex: 7,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              HeroSection(key: _quienesSomosKey), // Carousel (acts as Quienes somos)
+              const SizedBox(height: 50),
+              EjesSection(key: _actividadesKey),
+              const SizedBox(height: 50),
+              PropuestasSection(),
+              const SizedBox(height: 50),
+              RecursosSection(key: _recursosKey),
+            ],
+          ),
+        ),
+        const SizedBox(width: 40),
+        Expanded(
+          flex: 3,
+          child: SidebarSection(donateKey: _donateKey), // Donate & Novedades
+        ),
       ],
     );
   }
 
   Widget _buildMobileLayout() {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildMainContent(),
+        if (!_isSearchExpanded) // If not mobile desktop nav, _inicioKey is here
+           Container(key: _inicioKey),
+        HeroSection(key: _quienesSomosKey),
+        const SizedBox(height: 40),
+        EjesSection(key: _actividadesKey),
+        const SizedBox(height: 40),
+        PropuestasSection(),
+        const SizedBox(height: 40),
+        RecursosSection(key: _recursosKey),
         const SizedBox(height: 60),
-        _buildSidebar(),
+        SidebarSection(donateKey: _donateKey),
       ],
     );
   }
 
-  Widget _buildMainContent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(key: _quienesSomosKey, child: const QuienesSomosSection()),
-        const SizedBox(height: 60),
-        Container(key: _recursosKey, child: const RecursosSection()),
-      ],
-    );
-  }
-
-  Widget _buildSidebar() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade300)),
-          child: Column(
+  Widget _buildFooter(bool isDesktop) {
+    return Container(
+      width: double.infinity,
+      color: const Color(0xFF0A0514),
+      padding: EdgeInsets.symmetric(vertical: 40, horizontal: isDesktop ? 60 : 20),
+      child: Flex(
+        direction: isDesktop ? Axis.horizontal : Axis.vertical,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Text("Apoyá nuestro espacio", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22), textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              Container(width: 120, height: 120, color: Colors.black12, child: const Icon(Icons.qr_code, size: 80, color: Colors.black87)),
-              const SizedBox(height: 32),
-              ElevatedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.volunteer_activism, size: 28),
-                label: const Text("DONAR"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.mustardDonate, foregroundColor: AppColors.textMain,
-                  minimumSize: const Size(double.infinity, 80), textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+              Image.network(
+                'https://i.imgur.com/CFM0Pcr.png',
+                height: 50,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 20),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Asociación Civil Sin Fines de Lucro - IGJ N° 1981600",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      "Propiciamos espacios que garanticen inclusión social, cultural y de los derechos de las mujeres adultas mayores.",
+                      style: TextStyle(color: Colors.white70, fontSize: 14),
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFooter() {
-    return Container(
-      width: double.infinity,
-      color: AppColors.backgroundSecondary,
-      padding: const EdgeInsets.symmetric(vertical: 40, horizontal: 20),
-      child: Column(
-        children: [
+          if (!isDesktop) const SizedBox(height: 30),
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: isDesktop ? MainAxisAlignment.end : MainAxisAlignment.center,
             children: [
               IconButton(
                 icon: const Icon(Icons.facebook, size: 40, color: Colors.blue),
@@ -403,7 +437,7 @@ class _LandingPageState extends State<LandingPage> {
               ),
               const SizedBox(width: 20),
               IconButton(
-                icon: const Icon(Icons.camera_alt, size: 40, color: Colors.purple), // Instagram icon approx
+                icon: const Icon(Icons.camera_alt, size: 40, color: Colors.purple), 
                 onPressed: () => launchUrl(Uri.parse('https://www.instagram.com/redherramientas?stkn=MW01cnN1eHlheHExMA==')),
               ),
               const SizedBox(width: 20),
@@ -413,8 +447,6 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          const Text("Red de Herramientas Entre Mujeres © 2026", style: TextStyle(fontSize: 16, color: Colors.black54)),
         ],
       ),
     );
@@ -425,44 +457,40 @@ class _LandingPageState extends State<LandingPage> {
 // SECTIONS
 // ==========================================
 
-class FullWidthCarousel extends StatefulWidget {
-  const FullWidthCarousel({super.key});
+class HeroSection extends StatefulWidget {
+  const HeroSection({super.key});
 
   @override
-  State<FullWidthCarousel> createState() => _FullWidthCarouselState();
+  State<HeroSection> createState() => _HeroSectionState();
 }
 
-class _FullWidthCarouselState extends State<FullWidthCarousel> {
-  final PageController _pageController = PageController();
+class _HeroSectionState extends State<HeroSection> {
+  final PageController _pageController = PageController(viewportFraction: 0.95);
   int _currentPage = 0;
+  int? _expandedIndex;
   Timer? _timer;
-
-  final List<Map<String, String>> slides = [
-    {
-      "title": "Enredos de Película",
-      "img": "https://images.unsplash.com/photo-1518932945647-7a3c9692482c?q=80&w=1600",
-      "desc": "Ciclo de cine debate para personas mayores, compartiendo reflexiones y cultura. Un espacio para el encuentro y la construcción colectiva.",
-      "url": "https://www.redherramientas.com"
-    },
-    {
-      "title": "Clic Seguro en RED",
-      "img": "https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1600",
-      "desc": "Tecnología, seguridad digital e inteligencia artificial. Reducimos la brecha digital aprendiendo a utilizar el celular y evitar estafas virtuales de forma autónoma.",
-      "url": "https://www.redherramientas.com"
-    }
-  ];
 
   @override
   void initState() {
     super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 6), (Timer timer) {
-      if (_currentPage < slides.length - 1) {
-        _currentPage++;
-      } else {
-        _currentPage = 0;
+    _startAutoPlay();
+  }
+
+  void _startAutoPlay() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_expandedIndex != null) return; 
+      
+      int nextPage = _currentPage + 1;
+      if (nextPage >= carouselNews.length) {
+        nextPage = 0;
       }
       if (_pageController.hasClients) {
-        _pageController.animateToPage(_currentPage, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
+        _pageController.animateToPage(
+          nextPage,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -476,151 +504,284 @@ class _FullWidthCarouselState extends State<FullWidthCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 600,
-      width: double.infinity,
-      child: Stack(
-        children: [
-          PageView.builder(
+    bool isDesktop = MediaQuery.of(context).size.width > 800;
+    
+    double baseHeight = isDesktop ? 680 : 720;
+    double expandedHeight = isDesktop ? 880 : 950;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: Text(
+            "Últimas Noticias y Novedades",
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              color: AppColors.dominant,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+        
+        AnimatedContainer(
+          duration: const Duration(milliseconds: 400),
+          curve: Curves.easeInOut,
+          height: _expandedIndex != null ? expandedHeight : baseHeight,
+          child: PageView.builder(
             controller: _pageController,
-            onPageChanged: (idx) => setState(() => _currentPage = idx),
-            itemCount: slides.length,
+            onPageChanged: (index) {
+              setState(() {
+                _currentPage = index;
+                _expandedIndex = null;
+              });
+            },
+            itemCount: carouselNews.length,
             itemBuilder: (context, index) {
-              return CarouselSlide(data: slides[index]);
+              bool isExpanded = _expandedIndex == index;
+              return Padding(
+                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 16.0 : 4.0),
+                child: NewsCard(
+                  article: carouselNews[index],
+                  isExpanded: isExpanded,
+                  onExpandToggle: () {
+                    setState(() {
+                      if (_expandedIndex == index) {
+                        _expandedIndex = null;
+                      } else {
+                        _expandedIndex = index;
+                      }
+                    });
+                  },
+                ),
+              );
             },
           ),
-          Positioned(
-            left: 20, top: 0, bottom: 0,
-            child: Center(
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 40),
-                onPressed: () {
-                  if (_currentPage > 0) _pageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.ease);
-                },
+        ),
+        const SizedBox(height: 24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(
+            carouselNews.length,
+            (index) => AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 12,
+              width: _currentPage == index ? 32 : 12,
+              decoration: BoxDecoration(
+                color: _currentPage == index ? AppColors.dominant : Colors.black26,
+                borderRadius: BorderRadius.circular(6),
               ),
             ),
           ),
-          Positioned(
-            right: 20, top: 0, bottom: 0,
-            child: Center(
-              child: IconButton(
-                icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40),
-                onPressed: () {
-                  if (_currentPage < slides.length - 1) _pageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.ease);
-                },
+        ),
+      ],
+    );
+  }
+}
+
+class NewsCard extends StatelessWidget {
+  final NewsArticle article;
+  final bool isExpanded;
+  final VoidCallback onExpandToggle;
+
+  const NewsCard({
+    super.key, 
+    required this.article,
+    required this.isExpanded,
+    required this.onExpandToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade300),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              Image.network(
+                article.imageUrl,
+                height: 280,
+                width: double.infinity,
+                fit: BoxFit.cover,
               ),
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.black87, Colors.transparent],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                  child: Text(
+                    article.title,
+                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              )
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  article.shortDescription,
+                  style: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.5),
+                ),
+                const SizedBox(height: 20),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton.icon(
+                    onPressed: onExpandToggle,
+                    icon: Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 28),
+                    label: Text(
+                      isExpanded ? "VER MENOS" : "VER MÁS", 
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    style: TextButton.styleFrom(foregroundColor: AppColors.dominant),
+                  ),
+                ),
+              ],
             ),
           ),
+          if (isExpanded)
+            Expanded(
+              child: Container(
+                width: double.infinity,
+                color: AppColors.backgroundSecondary,
+                padding: const EdgeInsets.all(24.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        article.expandedText,
+                        style: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.6),
+                      ),
+                      // Notice: No "Ir a la publicación" button as requested!
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 }
 
-class CarouselSlide extends StatefulWidget {
-  final Map<String, String> data;
-  const CarouselSlide({super.key, required this.data});
+class NewsArticle {
+  final String title;
+  final String shortDescription;
+  final String expandedText;
+  final String imageUrl;
 
-  @override
-  State<CarouselSlide> createState() => _CarouselSlideState();
+  NewsArticle({
+    required this.title,
+    required this.shortDescription,
+    required this.expandedText,
+    required this.imageUrl,
+  });
 }
 
-class _CarouselSlideState extends State<CarouselSlide> {
-  bool _expanded = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        GestureDetector(
-          onTap: () => launchUrl(Uri.parse(widget.data['url']!)),
-          child: Image.network(widget.data['img']!, fit: BoxFit.cover),
-        ),
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-              begin: Alignment.bottomCenter, end: Alignment.topCenter,
-            )
-          ),
-        ),
-        Positioned(
-          bottom: 60, left: 80, right: 80,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(widget.data['title']!, style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
-              AnimatedCrossFade(
-                firstChild: Text(
-                  widget.data['desc']!,
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(color: Colors.white70, fontSize: 20),
-                ),
-                secondChild: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(widget.data['desc']!, style: const TextStyle(color: Colors.white, fontSize: 20)),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () => launchUrl(Uri.parse(widget.data['url']!)),
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.dominant),
-                      child: const Text("Ir a la publicación", style: TextStyle(color: Colors.white)),
-                    )
-                  ],
-                ),
-                crossFadeState: _expanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-                duration: const Duration(milliseconds: 300),
-              ),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () => setState(() => _expanded = !_expanded),
-                child: Text(_expanded ? "Ver menos" : "Ver más", style: const TextStyle(color: AppColors.mustardDonate, fontSize: 18)),
-              )
-            ],
-          ),
-        )
-      ],
-    );
-  }
-}
+final List<NewsArticle> carouselNews = [
+  NewsArticle(
+    title: '¿Qué es #ClicSeguroEnRED?',
+    shortDescription: 'Un nuevo espacio para adultas mayores enfocado en la prevención de estafas digitales.',
+    expandedText: 'Los facilitadores somos también mujeres mayores, lo que conlleva empatía necesaria para generar clima de seguridad. Hablamos de autonomía tecnológica que les permita dejar de pedir ayuda para las tareas cotidianas relacionadas con la tecnología, como pedir un turno médico o escanear una receta.',
+    imageUrl: 'https://i.imgur.com/K1YvIcd.jpeg',
+  ),
+  NewsArticle(
+    title: 'Talleres de Sensibilización',
+    shortDescription: 'Iniciamos nuestro ciclo de talleres presenciales para el buen uso del celular.',
+    expandedText: 'Realizamos el primer taller introductorio sobre seguridad en dispositivos móviles. Abordamos los temores comunes, cómo configurar contraseñas seguras y reconocer mensajes engañosos por WhatsApp o SMS.',
+    imageUrl: 'https://i.imgur.com/L7Xm7rQ.jpeg',
+  ),
+];
 
 class EjesSection extends StatelessWidget {
   const EjesSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final ejes = [
-      {"icon": "🌿", "title": "Salud y Bienestar"},
-      {"icon": "🎭", "title": "Educación y Cultura"},
-      {"icon": "⚖️", "title": "Derechos"},
-      {"icon": "🌱", "title": "Medio Ambiente"},
-    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Ejes de Trabajo",
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 26, color: AppColors.textMain),
+        ),
+        const SizedBox(height: 24),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            int columns = constraints.maxWidth > 800 ? 4 : (constraints.maxWidth > 500 ? 2 : 1);
+            return GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 1.2, 
+              children: [
+                _buildEjeCard("Salud y Bienestar", "https://i.imgur.com/L7Xm7rQ.jpeg", "Cuidado integral"),
+                _buildEjeCard("Educación y Cultura", "https://i.imgur.com/K1YvIcd.jpeg", "Formación continua"),
+                _buildEjeCard("Derechos", "https://i.imgur.com/L7Xm7rQ.jpeg", "Defensa y promoción"),
+                _buildEjeCard("Medio Ambiente", "https://i.imgur.com/K1YvIcd.jpeg", "Sustentabilidad"),
+              ],
+            );
+          },
+        ),
+      ],
+    );
+  }
 
+  Widget _buildEjeCard(String title, String imageUrl, String subtitle) {
     return Container(
-      width: double.infinity,
-      color: Colors.white,
-      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 24),
-      child: Column(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Text("Nuestros Ejes", style: Theme.of(context).textTheme.headlineMedium),
-          const SizedBox(height: 10),
-          const Text("Cuatro grandes temas para encontrar rápido lo que buscás.", style: TextStyle(fontSize: 20, color: Colors.black54)),
-          const SizedBox(height: 40),
-          Wrap(
-            spacing: 20, runSpacing: 20, alignment: WrapAlignment.center,
-            children: ejes.map((e) => Container(
-              width: 250, padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(color: AppColors.backgroundMain, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.black12)),
-              child: Column(
-                children: [
-                  Text(e["icon"]!, style: const TextStyle(fontSize: 50)),
-                  const SizedBox(height: 16),
-                  Text(e["title"]!, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.dominant), textAlign: TextAlign.center),
-                ],
-              ),
-            )).toList(),
+          Image.network(imageUrl, fit: BoxFit.cover),
+          Container(color: Colors.black.withOpacity(0.4)),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  subtitle,
+                  style: const TextStyle(color: Colors.white70, fontSize: 16),
+                ),
+              ],
+            ),
           )
         ],
       ),
@@ -628,18 +789,50 @@ class EjesSection extends StatelessWidget {
   }
 }
 
-class QuienesSomosSection extends StatelessWidget {
-  const QuienesSomosSection({super.key});
+class PropuestasSection extends StatelessWidget {
+  const PropuestasSection({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final propuestas = [
+      {"icon": "🤝", "text": "Alianzas con centros de jubilados locales."},
+      {"icon": "💻", "text": "Talleres de alfabetización digital y seguridad online."},
+      {"icon": "🎭", "text": "Encuentros culturales y recreativos (teatro, literatura)."},
+      {"icon": "🌱", "text": "Promoción de prácticas sustentables e huertas comunitarias."},
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("¿Qué es #ClicSeguroEnRED?", style: Theme.of(context).textTheme.headlineMedium),
+        Text("Nuestras propuestas", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 26, color: AppColors.textMain)),
         const SizedBox(height: 24),
-        Text("Un espacio impulsado por Red de Herramientas entre Mujeres para reducir la brecha digital y la de usabilidad, para promover el uso seguro y autónomo de la tecnología entre personas mayores.", style: Theme.of(context).textTheme.bodyLarge),
-        const SizedBox(height: 20),
-        Text("Los facilitadores, docentes de tecnología, somos también mujeres mayores, lo que conlleva la empatía necesaria para generar el clima de seguridad y confianza...", style: Theme.of(context).textTheme.bodyLarge),
+        Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Column(
+            children: propuestas.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 14.0),
+                child: Row(
+                  children: [
+                    Text(item["icon"]!, style: const TextStyle(fontSize: 32)),
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: Text(
+                        item["text"]!,
+                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600, fontSize: 22),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
       ],
     );
   }
@@ -647,25 +840,151 @@ class QuienesSomosSection extends StatelessWidget {
 
 class RecursosSection extends StatelessWidget {
   const RecursosSection({super.key});
+
   @override
   Widget build(BuildContext context) {
     final resources = [
-      "Cómo detectar estafas", "Configuraciones de accesibilidad", "Uso seguro de WhatsApp", "Tutoriales paso a paso"
+      "Cómo detectar estafas virtuales.",
+      "Configuraciones de accesibilidad.",
+      "Uso seguro de WhatsApp.",
+      "Tutoriales paso a paso.",
+      "Guías sobre inteligencia artificial."
     ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text("Recursos destacados", style: Theme.of(context).textTheme.titleLarge),
+        Text("Recursos destacados", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 26, color: AppColors.textMain)),
         const SizedBox(height: 24),
-        Wrap(
-          spacing: 16, runSpacing: 16,
-          children: resources.map((res) => Chip(
-            label: Text(res, style: const TextStyle(color: Colors.white, fontSize: 16)),
-            backgroundColor: AppColors.dominant,
-            padding: const EdgeInsets.all(12),
-          )).toList(),
+        
+        LayoutBuilder(
+          builder: (context, constraints) {
+            int columns = constraints.maxWidth > 700 ? 5 : 2;
+            return GridView.count(
+              crossAxisCount: columns,
+              crossAxisSpacing: 20,
+              mainAxisSpacing: 20,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              childAspectRatio: 2 / 3,
+              children: resources.map((res) {
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: AppColors.dominant,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 3)),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.star, size: 40, color: AppColors.mustardDonate),
+                      const SizedBox(height: 16),
+                      Text(
+                        res,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontSize: 16, color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+            );
+          },
         ),
       ],
+    );
+  }
+}
+
+class SidebarSection extends StatelessWidget {
+  final GlobalKey? donateKey;
+  const SidebarSection({super.key, this.donateKey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          key: donateKey,
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Column(
+            children: [
+              Text("Apoyá nuestro espacio", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 22), textAlign: TextAlign.center),
+              const SizedBox(height: 24),
+              Container(
+                width: 120,
+                height: 120,
+                color: Colors.black12,
+                child: const Icon(Icons.qr_code, size: 80, color: Colors.black87),
+              ),
+              const SizedBox(height: 32),
+              ElevatedButton.icon(
+                onPressed: () {},
+                icon: const Icon(Icons.volunteer_activism, size: 28),
+                label: const Text("DONAR"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.mustardDonate,
+                  foregroundColor: AppColors.textMain,
+                  minimumSize: const Size(double.infinity, 80),
+                  textStyle: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, letterSpacing: 1.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 40),
+
+        Text("NOVEDADES", style: Theme.of(context).textTheme.titleLarge?.copyWith(fontSize: 26, color: AppColors.separatorBar)),
+        const SizedBox(height: 24),
+        _buildNovedadCard("Encuentro presencial: Uso del cajero automático", "15 de Octubre, 2026"),
+        _buildNovedadCard("Taller Online: Protegiendo nuestras contraseñas", "22 de Octubre, 2026"),
+        _buildNovedadCard("Charla Abierta: Derribando mitos sobre la IA", "05 de Noviembre, 2026"),
+      ],
+    );
+  }
+
+  Widget _buildNovedadCard(String title, String date) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 20),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: InkWell(
+        onTap: () {},
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.textMain),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(Icons.calendar_month, color: AppColors.dominant, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    date,
+                    style: const TextStyle(fontSize: 16, color: AppColors.dominant, fontWeight: FontWeight.w600),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
