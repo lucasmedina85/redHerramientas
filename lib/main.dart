@@ -176,13 +176,17 @@ class _LandingPageState extends State<LandingPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _navItem("Inicio", () => _scrollToKey(_inicioKey)),
-                    _navItem("Quiénes somos", () => _scrollToKey(_quienesSomosKey)), // HeroSection stands as Quienes somos via Clic Seguro en RED
+                    _navItem("Quiénes somos", () => _scrollToKey(_quienesSomosKey)), 
                     _navItem("Actividades", () => _scrollToKey(_actividadesKey)),
                     _navItem("Recursos", () => _scrollToKey(_recursosKey)),
                     _navItem("Contacto", () => _scrollToKey(_contactoKey)),
                   ],
                 ),
               ),
+            
+            // Hero / Carousel Full Width
+            HeroSection(key: _quienesSomosKey),
+            _buildSeparator(isMobile: !isDesktop),
             
             // Content
             Padding(
@@ -381,8 +385,6 @@ class _LandingPageState extends State<LandingPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              HeroSection(key: _quienesSomosKey), // Carousel (acts as Quienes somos)
-              _buildSeparator(isMobile: false),
               EjesSection(key: _actividadesKey),
               _buildSeparator(isMobile: false),
               PropuestasSection(),
@@ -404,10 +406,8 @@ class _LandingPageState extends State<LandingPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!_isSearchExpanded) // If not mobile desktop nav, _inicioKey is here
+        if (!_isSearchExpanded) 
            Container(key: _inicioKey),
-        HeroSection(key: _quienesSomosKey),
-        _buildSeparator(isMobile: true),
         EjesSection(key: _actividadesKey),
         _buildSeparator(isMobile: true),
         PropuestasSection(),
@@ -507,9 +507,8 @@ class HeroSection extends StatefulWidget {
 }
 
 class _HeroSectionState extends State<HeroSection> {
-  final PageController _pageController = PageController(viewportFraction: 0.95);
+  final PageController _pageController = PageController(viewportFraction: 1.0);
   int _currentPage = 0;
-  int? _expandedIndex;
   Timer? _timer;
 
   @override
@@ -521,13 +520,11 @@ class _HeroSectionState extends State<HeroSection> {
   void _startAutoPlay() {
     _timer?.cancel();
     _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      if (_expandedIndex != null) return; 
-      
-      int nextPage = _currentPage + 1;
-      if (nextPage >= carouselNews.length) {
-        nextPage = 0;
-      }
       if (_pageController.hasClients) {
+        int nextPage = _currentPage + 1;
+        if (nextPage >= carouselNews.length) {
+          nextPage = 0;
+        }
         _pageController.animateToPage(
           nextPage,
           duration: const Duration(milliseconds: 600),
@@ -544,186 +541,209 @@ class _HeroSectionState extends State<HeroSection> {
     super.dispose();
   }
 
+  void _showNewsDialog(BuildContext context, NewsArticle article) {
+    showDialog(
+      context: context,
+      builder: (BuildContext ctx) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 800, maxHeight: 800),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                  child: Image.network(
+                    article.imageUrl,
+                    height: 300,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            article.title,
+                            style: Theme.of(ctx).textTheme.headlineMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textMain,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            article.expandedText,
+                            style: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.6),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.dominant, foregroundColor: Colors.white),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text("CERRAR"),
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ),
+        );
+      }
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     bool isDesktop = MediaQuery.of(context).size.width > 800;
-    
-    double baseHeight = isDesktop ? 680 : 720;
-    double expandedHeight = isDesktop ? 880 : 950;
+    double heroHeight = isDesktop ? 600 : 450;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: Text(
-            "Últimas Noticias y Novedades",
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-              color: AppColors.dominant,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 24),
-        
-        AnimatedContainer(
-          duration: const Duration(milliseconds: 400),
-          curve: Curves.easeInOut,
-          height: _expandedIndex != null ? expandedHeight : baseHeight,
-          child: PageView.builder(
-            controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-                _expandedIndex = null;
-              });
-            },
-            itemCount: carouselNews.length,
-            itemBuilder: (context, index) {
-              bool isExpanded = _expandedIndex == index;
-              return Padding(
-                padding: EdgeInsets.symmetric(horizontal: isDesktop ? 16.0 : 4.0),
-                child: NewsCard(
-                  article: carouselNews[index],
-                  isExpanded: isExpanded,
-                  onExpandToggle: () {
-                    setState(() {
-                      if (_expandedIndex == index) {
-                        _expandedIndex = null;
-                      } else {
-                        _expandedIndex = index;
-                      }
-                    });
-                  },
-                ),
-              );
-            },
-          ),
-        ),
-        const SizedBox(height: 24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(
-            carouselNews.length,
-            (index) => AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              height: 12,
-              width: _currentPage == index ? 32 : 12,
-              decoration: BoxDecoration(
-                color: _currentPage == index ? AppColors.dominant : Colors.black26,
-                borderRadius: BorderRadius.circular(6),
+        SizedBox(
+          height: heroHeight,
+          width: double.infinity,
+          child: Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentPage = index;
+                  });
+                },
+                itemCount: carouselNews.length,
+                itemBuilder: (context, index) {
+                  final article = carouselNews[index];
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Blurred background for un-cropped image aesthetic if proportions mismatch
+                      Image.network(
+                        article.imageUrl,
+                        fit: BoxFit.cover,
+                      ),
+                      Container(color: Colors.black.withOpacity(0.4)),
+                      // The uncropped image
+                      Image.network(
+                        article.imageUrl,
+                        fit: BoxFit.contain, // sin recortar en altura
+                      ),
+                      // Text overlay
+                      Positioned(
+                        bottom: 40,
+                        left: isDesktop ? 60 : 20,
+                        right: isDesktop ? 60 : 20,
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.7),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                article.title,
+                                style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                article.shortDescription,
+                                style: const TextStyle(color: Colors.white, fontSize: 16),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: () => _showNewsDialog(context, article),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.dominant,
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text("VER MÁS"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    ],
+                  );
+                },
               ),
-            ),
+              // Left Arrow
+              Positioned(
+                left: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 40),
+                    onPressed: () {
+                      _timer?.cancel(); // pause on manual interaction
+                      if (_currentPage > 0) {
+                        _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      } else {
+                        _pageController.animateToPage(carouselNews.length - 1, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              // Right Arrow
+              Positioned(
+                right: 10,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, color: Colors.white, size: 40),
+                    onPressed: () {
+                      _timer?.cancel();
+                      if (_currentPage < carouselNews.length - 1) {
+                        _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      } else {
+                        _pageController.animateToPage(0, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+                      }
+                    },
+                  ),
+                ),
+              ),
+              // Dots indicator
+              Positioned(
+                bottom: 15,
+                left: 0,
+                right: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                    carouselNews.length,
+                    (index) => Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: 12,
+                      width: _currentPage == index ? 32 : 12,
+                      decoration: BoxDecoration(
+                        color: _currentPage == index ? AppColors.dominant : Colors.white70,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ],
-    );
-  }
-}
-
-class NewsCard extends StatelessWidget {
-  final NewsArticle article;
-  final bool isExpanded;
-  final VoidCallback onExpandToggle;
-
-  const NewsCard({
-    super.key, 
-    required this.article,
-    required this.isExpanded,
-    required this.onExpandToggle,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Stack(
-            children: [
-              Image.network(
-                article.imageUrl,
-                height: 280,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Colors.black87, Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
-                  ),
-                  child: Text(
-                    article.title,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              )
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  article.shortDescription,
-                  style: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.5),
-                ),
-                const SizedBox(height: 20),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton.icon(
-                    onPressed: onExpandToggle,
-                    icon: Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, size: 28),
-                    label: Text(
-                      isExpanded ? "VER MENOS" : "VER MÁS", 
-                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    style: TextButton.styleFrom(foregroundColor: AppColors.dominant),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (isExpanded)
-            Expanded(
-              child: Container(
-                width: double.infinity,
-                color: AppColors.backgroundSecondary,
-                padding: const EdgeInsets.all(24.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        article.expandedText,
-                        style: const TextStyle(fontSize: 18, color: AppColors.textMain, height: 1.6),
-                      ),
-                      // Notice: No "Ir a la publicación" button as requested!
-                    ],
-                  ),
-                ),
-              ),
-            ),
-        ],
-      ),
     );
   }
 }
@@ -781,10 +801,10 @@ class EjesSection extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               childAspectRatio: 1.2, 
               children: [
-                _buildEjeCard("Salud y Bienestar", "https://i.imgur.com/L7Xm7rQ.jpeg", "Cuidado integral"),
-                _buildEjeCard("Educación y Cultura", "https://i.imgur.com/K1YvIcd.jpeg", "Formación continua"),
-                _buildEjeCard("Derechos", "https://i.imgur.com/L7Xm7rQ.jpeg", "Defensa y promoción"),
-                _buildEjeCard("Medio Ambiente", "https://i.imgur.com/K1YvIcd.jpeg", "Sustentabilidad"),
+                _buildColoredEjeCard("Salud y Bienestar", Icons.health_and_safety, "Cuidado integral", Colors.red.shade50, Colors.red.shade800),
+                _buildColoredEjeCard("Educación y Cultura", Icons.school, "Formación continua", Colors.blue.shade50, Colors.blue.shade800),
+                _buildColoredEjeCard("Derechos", Icons.balance, "Defensa y promoción", Colors.purple.shade50, Colors.purple.shade800),
+                _buildColoredEjeCard("Medio Ambiente", Icons.eco, "Sustentabilidad", Colors.green.shade50, Colors.green.shade800),
               ],
             );
           },
@@ -793,43 +813,45 @@ class EjesSection extends StatelessWidget {
     );
   }
 
-  Widget _buildEjeCard(String title, String imageUrl, String subtitle) {
+  Widget _buildColoredEjeCard(String title, IconData icon, String subtitle, Color bgColor, Color iconColor) {
     return Container(
       decoration: BoxDecoration(
+        color: bgColor,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
         ],
       ),
-      clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.network(imageUrl, fit: BoxFit.cover),
-          Container(color: Colors.black.withOpacity(0.4)),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white70, fontSize: 16),
-                ),
-              ],
+          Icon(icon, size: 50, color: iconColor),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: iconColor,
             ),
-          )
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 14,
+              color: iconColor.withOpacity(0.8),
+            ),
+          ),
         ],
       ),
     );
   }
 }
+
 
 class PropuestasSection extends StatelessWidget {
   const PropuestasSection({super.key});
