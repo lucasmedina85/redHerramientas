@@ -382,11 +382,11 @@ class _LandingPageState extends State<LandingPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               HeroSection(key: _quienesSomosKey), // Carousel (acts as Quienes somos)
-              const SizedBox(height: 50),
+              _buildSeparator(isMobile: false),
               EjesSection(key: _actividadesKey),
-              const SizedBox(height: 50),
+              _buildSeparator(isMobile: false),
               PropuestasSection(),
-              const SizedBox(height: 50),
+              _buildSeparator(isMobile: false),
               RecursosSection(key: _recursosKey),
             ],
           ),
@@ -407,15 +407,29 @@ class _LandingPageState extends State<LandingPage> {
         if (!_isSearchExpanded) // If not mobile desktop nav, _inicioKey is here
            Container(key: _inicioKey),
         HeroSection(key: _quienesSomosKey),
-        const SizedBox(height: 40),
+        _buildSeparator(isMobile: true),
         EjesSection(key: _actividadesKey),
-        const SizedBox(height: 40),
+        _buildSeparator(isMobile: true),
         PropuestasSection(),
-        const SizedBox(height: 40),
+        _buildSeparator(isMobile: true),
         RecursosSection(key: _recursosKey),
         const SizedBox(height: 60),
         SidebarSection(donateKey: _donateKey),
       ],
+    );
+  }
+
+  Widget _buildSeparator({required bool isMobile}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 30 : 40),
+      child: Container(
+        height: 6,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: const Color(0xFFCC6E83),
+          borderRadius: BorderRadius.circular(3),
+        ),
+      ),
     );
   }
 
