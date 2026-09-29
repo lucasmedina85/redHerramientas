@@ -132,10 +132,34 @@ class _LandingPageState extends State<LandingPage> {
     return Scaffold(
       appBar: _buildAppBar(isDesktop, context),
       drawer: isDesktop ? null : _buildDrawer(context),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.chat, color: Colors.white, size: 28),
-        onPressed: () => launchUrl(Uri.parse('https://wa.me/5491122766776')),
+            floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          FloatingActionButton(
+            heroTag: 'whatsapp',
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            onPressed: () => launchUrl(Uri.parse('https://wa.me/5491122766776')),
+            child: ClipOval(
+              child: Image.asset(
+                'assets/whatsapp.png',
+                width: 55,
+                height: 55,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          FloatingActionButton(
+            heroTag: 'scroll_top',
+            backgroundColor: AppColors.dominant.withOpacity(0.6),
+            elevation: 0,
+            onPressed: () {
+              _scrollController.animateTo(0, duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
+            },
+            child: const Icon(Icons.arrow_upward, color: Colors.white),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         controller: _scrollController,
@@ -321,6 +345,10 @@ class _LandingPageState extends State<LandingPage> {
             Navigator.pop(context);
             _scrollToKey(_contactoKey);
           }),
+          _drawerItem("Donar", onTap: () {
+            Navigator.pop(context);
+            _scrollToKey(_donateKey);
+          }, isHighlighted: true),
         ],
       ),
     );
@@ -705,13 +733,13 @@ final List<NewsArticle> carouselNews = [
     title: '¿Qué es #ClicSeguroEnRED?',
     shortDescription: 'Un nuevo espacio para adultas mayores enfocado en la prevención de estafas digitales.',
     expandedText: 'Los facilitadores somos también mujeres mayores, lo que conlleva empatía necesaria para generar clima de seguridad. Hablamos de autonomía tecnológica que les permita dejar de pedir ayuda para las tareas cotidianas relacionadas con la tecnología, como pedir un turno médico o escanear una receta.',
-    imageUrl: 'https://i.imgur.com/K1YvIcd.jpeg',
+    imageUrl: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&q=80&w=800',
   ),
   NewsArticle(
     title: 'Talleres de Sensibilización',
     shortDescription: 'Iniciamos nuestro ciclo de talleres presenciales para el buen uso del celular.',
     expandedText: 'Realizamos el primer taller introductorio sobre seguridad en dispositivos móviles. Abordamos los temores comunes, cómo configurar contraseñas seguras y reconocer mensajes engañosos por WhatsApp o SMS.',
-    imageUrl: 'https://i.imgur.com/L7Xm7rQ.jpeg',
+    imageUrl: 'https://images.unsplash.com/photo-1581056771107-24ca5f033842?auto=format&fit=crop&q=80&w=800',
   ),
 ];
 
