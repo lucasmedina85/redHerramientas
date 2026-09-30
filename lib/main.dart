@@ -77,6 +77,7 @@ class _LandingPageState extends State<LandingPage> {
   final GlobalKey _inicioKey = GlobalKey();
   final GlobalKey _quienesSomosKey = GlobalKey();
   final GlobalKey _actividadesKey = GlobalKey();
+  final GlobalKey _propuestasKey = GlobalKey();
   final GlobalKey _recursosKey = GlobalKey();
   final GlobalKey _contactoKey = GlobalKey();
   final GlobalKey _donateKey = GlobalKey();
@@ -176,8 +177,8 @@ class _LandingPageState extends State<LandingPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _navItem("Inicio", () => _scrollToKey(_inicioKey)),
-                    _navItem("Quiénes somos", () => _scrollToKey(_quienesSomosKey)), 
-                    _navItem("Actividades", () => _scrollToKey(_actividadesKey)),
+                    _navItem("Quiénes somos", () => _scrollToKey(_contactoKey)), 
+                    _navItem("Actividades", () => _scrollToKey(_propuestasKey)),
                     _navItem("Recursos", () => _scrollToKey(_recursosKey)),
                     _navItem("Contacto", () => _scrollToKey(_contactoKey)),
                   ],
@@ -335,11 +336,11 @@ class _LandingPageState extends State<LandingPage> {
           }),
           _drawerItem("Quiénes Somos", onTap: () {
             Navigator.pop(context);
-            _scrollToKey(_quienesSomosKey);
+            _scrollToKey(_contactoKey);
           }),
           _drawerItem("Actividades", onTap: () {
             Navigator.pop(context);
-            _scrollToKey(_actividadesKey);
+            _scrollToKey(_propuestasKey);
           }),
           _drawerItem("Recursos", onTap: () {
             Navigator.pop(context);
@@ -387,7 +388,7 @@ class _LandingPageState extends State<LandingPage> {
             children: [
               EjesSection(key: _actividadesKey),
               _buildSeparator(isMobile: false),
-              PropuestasSection(),
+              PropuestasSection(key: _propuestasKey),
               _buildSeparator(isMobile: false),
               RecursosSection(key: _recursosKey),
             ],
@@ -410,7 +411,7 @@ class _LandingPageState extends State<LandingPage> {
            Container(key: _inicioKey),
         EjesSection(key: _actividadesKey),
         _buildSeparator(isMobile: true),
-        PropuestasSection(),
+        PropuestasSection(key: _propuestasKey),
         _buildSeparator(isMobile: true),
         RecursosSection(key: _recursosKey),
         const SizedBox(height: 60),
@@ -822,28 +823,38 @@ class EjesSection extends StatelessWidget {
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
         ],
       ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      padding: const EdgeInsets.all(16),
+      child: Stack(
         children: [
-          Icon(icon, size: 50, color: iconColor),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: iconColor,
-            ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: Icon(icon, size: 40, color: iconColor),
           ),
-          const SizedBox(height: 8),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              color: iconColor.withOpacity(0.8),
+          Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: iconColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: iconColor.withOpacity(0.8),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
