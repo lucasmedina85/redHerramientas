@@ -93,8 +93,8 @@ class _LandingPageState extends State<LandingPage> {
     super.initState();
     _searchKeywords['inicio'] = _inicioKey;
     _searchKeywords['quienes'] = _quienesSomosKey;
-    _searchKeywords['somos'] = _quienesSomosKey;
-    _searchKeywords['actividades'] = _actividadesKey;
+    _searchKeywords['somos'] = _contactoKey;
+    _searchKeywords['actividades'] = _propuestasKey;
     _searchKeywords['recursos'] = _recursosKey;
     _searchKeywords['contacto'] = _contactoKey;
     _searchKeywords['donar'] = _donateKey;
@@ -104,12 +104,24 @@ class _LandingPageState extends State<LandingPage> {
   void _scrollToKey(GlobalKey key) {
     final context = key.currentContext;
     if (context != null) {
-      Scrollable.ensureVisible(
-        context,
-        duration: const Duration(milliseconds: 800),
-        curve: Curves.easeInOut,
-        alignment: 0.1, // Scroll so item is near top
-      );
+      final box = context.findRenderObject() as RenderBox?;
+      if (box != null) {
+        // Obtenemos la posicion global del widget
+        final position = box.localToGlobal(Offset.zero).dy;
+        // La altura de la pantalla
+        final screenHeight = MediaQuery.of(context).size.height;
+        // Calculamos el target
+        double target = _scrollController.offset + position - 80; // 80 de margen
+        
+        // No pasarse del inicio ni del final
+        target = target.clamp(0.0, _scrollController.position.maxScrollExtent);
+        
+        _scrollController.animateTo(
+          target,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.easeInOut,
+        );
+      }
     }
   }
 
@@ -176,7 +188,7 @@ class _LandingPageState extends State<LandingPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _navItem("Inicio", () => _scrollToKey(_inicioKey)),
+                    _navItem("Inicio", () => _scrollController.animateTo(0, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut)),
                     _navItem("Quiénes somos", () => _scrollToKey(_contactoKey)), 
                     _navItem("Actividades", () => _scrollToKey(_propuestasKey)),
                     _navItem("Recursos", () => _scrollToKey(_recursosKey)),
@@ -332,7 +344,7 @@ class _LandingPageState extends State<LandingPage> {
           ),
           _drawerItem("Inicio", onTap: () {
             Navigator.pop(context);
-            _scrollToKey(_inicioKey);
+            _scrollController.animateTo(0, duration: const Duration(milliseconds: 800), curve: Curves.easeInOut);
           }),
           _drawerItem("Quiénes Somos", onTap: () {
             Navigator.pop(context);
