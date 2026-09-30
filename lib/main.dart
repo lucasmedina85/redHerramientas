@@ -162,7 +162,7 @@ class _LandingPageState extends State<LandingPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 24),
           FloatingActionButton(
             heroTag: 'scroll_top',
             backgroundColor: AppColors.dominant.withOpacity(0.6),
@@ -483,11 +483,13 @@ class _LandingPageState extends State<LandingPage> {
             ],
           ),
           if (!isDesktop) const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: isDesktop ? MainAxisAlignment.end : MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.facebook, size: 40, color: Colors.blue),
+          Padding(
+            padding: EdgeInsets.only(right: isDesktop ? 100.0 : 0.0),
+            child: Row(
+              mainAxisAlignment: isDesktop ? MainAxisAlignment.end : MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.facebook, size: 40, color: Colors.blue),
                 onPressed: () => launchUrl(Uri.parse('https://www.facebook.com/share/1RiPWewXqR/')),
               ),
               const SizedBox(width: 20),
@@ -501,6 +503,7 @@ class _LandingPageState extends State<LandingPage> {
                 onPressed: () => launchUrl(Uri.parse('https://youtube.com/@reddeherramientasentremujeres?si=X0ZCFkMKebH4L3lk')),
               ),
             ],
+          ),
           ),
         ],
       ),
@@ -677,7 +680,7 @@ class _HeroSectionState extends State<HeroSection> {
                                 article.shortDescription,
                                 style: const TextStyle(color: Colors.white, fontSize: 16),
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 24),
                               ElevatedButton(
                                 onPressed: () => _showNewsDialog(context, article),
                                 style: ElevatedButton.styleFrom(
@@ -968,7 +971,7 @@ class RecursosSection extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const Icon(Icons.star, size: 40, color: AppColors.mustardDonate),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 24),
                       Text(
                         res,
                         textAlign: TextAlign.center,
